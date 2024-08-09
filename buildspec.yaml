@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    ECR_REPOSITORY_URI: "public.ecr.aws/o2v6d8f8/demoecr"
+    ECR_REPOSITORY_URI: "public.ecr.aws/o2v6d8f8/demoecrr"
     IMAGE_TAG: "latest"
 
 phases:
