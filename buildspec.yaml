@@ -1,13 +1,57 @@
 version: 0.2
 
+env:
+  secrets-manager:
+    GITHUB_TOKEN: github-token-dxp
 phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - npm i npm@10.2.4 -g
+      - echo Installing global dependencies..
+      - npm install -g typescript jest @types/node
+      - echo Installing project dependencies...
+      - npm ci
+      - npm dedupe
   pre_build:
     commands:
+      - echo Starting unit tests at `date`
+      - npm run test
+      - echo Unit tests execution complete at `date`
+      - echo Removing devDependencies...
+      - npm prune --production
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
-
+      - aws --region ca-central-1 ecr get-login-password | docker login --username AWS --password-stdin 136666276919.dkr.ecr.ca-central-1.amazonaws.com
   build:
     commands:
-      - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Building for production...
+      # - npm run build
+      # - cp -rf docs config migrations .aws *.json node_modules dist/
+      - tsc --build tsconfig.json
+      - echo Building the Docker image for the notification-service...
+      - SRC_HASH=`echo $CODEBUILD_SOURCE_VERSION | awk -v FS="(Source/|.zip)" '{print $2}'`
+      - echo Source code hash - $SRC_HASH
+      - docker build -f .Dockerfile -t $ECR_IMAGE_REPO_NAME:$SRC_HASH --build-arg GITHUB_TOKEN=${GITHUB_TOKEN} .
+      - echo Tagging the Docker images...
+      - docker tag $ECR_IMAGE_REPO_NAME:$SRC_HASH 136666276919.dkr.ecr.ca-central-1.amazonaws.com/$ECR_IMAGE_REPO_NAME:$SRC_HASH
+      - echo Pushing the Docker image...
+      - IMAGE_PATH=`echo 136666276919.dkr.ecr.ca-central-1.amazonaws.com/$ECR_IMAGE_REPO_NAME:$SRC_HASH`
+      - docker push $IMAGE_PATH
+      - echo Pushed the Docker image, now packaging CloudFormation templates...
+      - echo $IMAGE_PATH
+      - sed -e "s/\${IMG_HASH}/$SRC_HASH/" .aws/cloudformation/config/dev-params.json > dev-params.json
+      - sed -e "s/\${IMG_HASH}/$SRC_HASH/" .aws/cloudformation/config/staging-params.json > staging-params.json
+      - sed -e "s/\${IMG_HASH}/$SRC_HASH/" .aws/cloudformation/config/production-params.json > production-params.json
+      - cp -f dev-params.json .aws/cloudformation/config/dev-params.json
+      - cp -f staging-params.json .aws/cloudformation/config/staging-params.json
+      - cp -f production-params.json .aws/cloudformation/config/production-params.json
+      - cp -rf .aws dist/
+      - rm -rf node_modules/npm
+  post_build:
+    commands:
+      - echo Build Complete
+artifacts:
+  files:
+    - '**/*'
+  base-directory: dist
