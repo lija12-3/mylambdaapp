@@ -18,15 +18,15 @@ phases:
   build:
     commands:
       - echo Building Docker image...
-      - docker build -t my-custom-repo .
+      - docker build -t my-docker-repo .
       - echo Docker image built.
 
   post_build:
     commands:
       - echo Tagging Docker image...
-      - docker tag my-custom-repo:latest 022499006293.dkr.ecr.us-east-1.amazonaws.com/my-custom-repo:latest
+      - docker tag my-docker-repo:latest 022499006293.dkr.ecr.us-east-1.amazonaws.com/my-docker-repo:latest
       - echo Pushing Docker image to ECR...
-      - docker push 022499006293.dkr.ecr.us-east-1.amazonaws.com/my-custom-repo:latest
+      - docker push 022499006293.dkr.ecr.us-east-1.amazonaws.com/my-docker-repo:latest
       - echo Docker image pushed.
 
 artifacts:
