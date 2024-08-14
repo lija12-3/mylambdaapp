@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   secrets-manager:
-    GITHUB_TOKEN: github-token-dxp
+    GITHUB_TOKEN: githubsecret
 phases:
   install:
     runtime-versions:
