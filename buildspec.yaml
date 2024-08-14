@@ -8,34 +8,35 @@ phases:
     runtime-versions:
       nodejs: 14
     commands:
-      - echo Installing dependencies...
+      - echo "Installing dependencies..."
       - npm install
-      - echo Dependencies installed.
+      - echo "Dependencies installed."
       
   pre_build:
     commands:
-      - echo Logging in to Amazon ECR...
+      - echo "Logging in to Amazon ECR..."
       - aws --region us-east-1 ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REGISTRY}
-      - echo Logging in complete.
+      - echo "Logging in complete."
       
   build:
     commands:
-      - echo Calculating source hash...
-      - SRC_HASH=$(echo $CODEBUILD_SOURCE_VERSION | awk -v FS="(Source/|.zip)" '{print $2}')
-      - echo Source code hash: $SRC_HASH
-      - echo Building Docker image...
+      - echo "Calculating source hash..."
+      - >
+        SRC_HASH=$(echo $CODEBUILD_SOURCE_VERSION | awk -v FS="(Source/|.zip)" '{print $2}');
+        echo "Source code hash: $SRC_HASH";
+      - echo "Building Docker image..."
       - docker build -t ${REPOSITORY_NAME}:${SRC_HASH} .
-      - echo Docker image built.
+      - echo "Docker image built."
 
   post_build:
     commands:
-      - echo Tagging Docker image with SRC_HASH and latest...
+      - echo "Tagging Docker image with SRC_HASH and latest..."
       - docker tag ${REPOSITORY_NAME}:${SRC_HASH} ${ECR_REGISTRY}/${REPOSITORY_NAME}:${SRC_HASH}
       - docker tag ${REPOSITORY_NAME}:${SRC_HASH} ${ECR_REGISTRY}/${REPOSITORY_NAME}:latest
-      - echo Pushing Docker image with SRC_HASH and latest tags to ECR...
+      - echo "Pushing Docker image with SRC_HASH and latest tags to ECR..."
       - docker push ${ECR_REGISTRY}/${REPOSITORY_NAME}:${SRC_HASH}
       - docker push ${ECR_REGISTRY}/${REPOSITORY_NAME}:latest
-      - echo Docker images pushed successfully.
+      - echo "Docker images pushed successfully."
 
 artifacts:
   files:
