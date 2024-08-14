@@ -32,11 +32,10 @@ phases:
   post_build:
     commands:
       - echo "Tagging Docker image with SRC_HASH and latest..."
-      - docker tag ${REPOSITORY_NAME}:${SRC_HASH} ${ECR_REGISTRY}/${REPOSITORY_NAME}:${SRC_HASH}
-      - docker tag ${REPOSITORY_NAME}:${SRC_HASH} ${ECR_REGISTRY}/${REPOSITORY_NAME}:latest
+      - docker tag $REPOSITORY_NAME:$SRC_HASH 022499006293.dkr.ecr.us-east-1.amazonaws.com/$REPOSITORY_NAME:$SRC_HASH
+      - IMAGE_PATH= `echo 022499006293.dkr.ecr.us-east-1.amazonaws.com/$REPOSITORY_NAME:$SRC_HASH`
       - echo "Pushing Docker image to ECR..."
-      - docker push ${ECR_REGISTRY}/${REPOSITORY_NAME}:${SRC_HASH}
-      - docker push ${ECR_REGISTRY}/${REPOSITORY_NAME}:latest
+      - docker PUSH $IMAGE_PATH
       - echo "Docker images pushed successfully."
 
 artifacts:
