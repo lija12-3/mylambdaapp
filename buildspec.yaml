@@ -26,7 +26,7 @@ phases:
       - SRC_HASH=`echo $CODEBUILD_SOURCE_VERSION | awk -F'/' '{print $NF}' | awk -F'.zip' '{print $1}'`
       - echo Source code hash - $SRC_HASH
       - echo "Building Docker image..."
-      - docker build -t ${REPOSITORY_NAME}:${SRC_HASH} .
+      - docker build -f .Dockerfile -t  ${REPOSITORY_NAME}:${SRC_HASH} .
       - echo "Docker image built."
 
   post_build:
