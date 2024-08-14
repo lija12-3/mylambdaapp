@@ -1,54 +1,28 @@
 version: 0.2
 
-env:
-  secrets-manager:
-    GITHUB_TOKEN: githubsecret
 
 phases:
   install:
-    runtime-versions:
-      docker: 20
-      nodejs: 20
     commands:
-      - echo Installing global dependencies...
-      - npm install -g aws-cli
-      - echo Installing project dependencies...
-      - npm ci
+      - echo Installing Docker...
+      - yum install -y docker
+      - service docker start
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-
-  pre_build:
-    commands:
-      - echo Starting unit tests at `date`
-      - npm run test || { echo 'Unit tests failed' && exit 1; }
-      - echo Unit tests execution complete at `date`
-      - echo Removing devDependencies...
-      - npm prune --production
-      - echo Building Docker image...
-      - SRC_HASH=$(echo $CODEBUILD_SOURCE_VERSION | awk -v FS="(Source/|.zip)" '{print $2}')
-      - echo Source code hash - $SRC_HASH
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
 
   build:
     commands:
-      - docker build -t $ECR_REPOSITORY:$SRC_HASH .
-      - echo Tagging Docker image...
-      - docker tag $ECR_REPOSITORY:$SRC_HASH $ECR_REGISTRY/$ECR_REPOSITORY:$SRC_HASH
-      - echo Pushing Docker image to ECR...
-      - docker push $ECR_REGISTRY/$ECR_REPOSITORY:$SRC_HASH
-      - echo Docker image pushed successfully
+      - echo Building the Docker image...
+      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - echo Tagging the Docker image...
+      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
 
   post_build:
     commands:
-      - echo Build process completed
+      - echo Pushing the Docker image...
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Build and push complete.
 
 artifacts:
   files:
     - '**/*'
-  base-directory: dist
-
-cache:
-  paths:
-    - '/root/.cache/pip'
-    - '/root/.m2/repository'
-    - '/root/.npm'
-    - '/root/.cache/awscli'
