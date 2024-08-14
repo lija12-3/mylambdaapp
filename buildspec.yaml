@@ -29,13 +29,13 @@ phases:
 
   post_build:
     commands:
-      - echo Tagging Docker image...
+      - echo Tagging Docker image with SRC_HASH and latest...
       - docker tag ${REPOSITORY_NAME}:${SRC_HASH} ${ECR_REGISTRY}/${REPOSITORY_NAME}:${SRC_HASH}
       - docker tag ${REPOSITORY_NAME}:${SRC_HASH} ${ECR_REGISTRY}/${REPOSITORY_NAME}:latest
-      - echo Pushing Docker image to ECR...
+      - echo Pushing Docker image with SRC_HASH and latest tags to ECR...
       - docker push ${ECR_REGISTRY}/${REPOSITORY_NAME}:${SRC_HASH}
       - docker push ${ECR_REGISTRY}/${REPOSITORY_NAME}:latest
-      - echo Docker image pushed.
+      - echo Docker images pushed successfully.
 
 artifacts:
   files:
