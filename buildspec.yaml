@@ -8,19 +8,19 @@ phases:
       - yum install -y docker
       - service docker start
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 022499006293.dkr.ecr.us-east-1.amazonaws.com
 
   build:
     commands:
       - echo Building the Docker image...
-      - docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+      - docker build -t ${RepositoryName} .
       - echo Tagging the Docker image...
-      - docker tag $REPOSITORY_URI:$IMAGE_TAG $REPOSITORY_URI:$IMAGE_TAG
+      - docker tag ${RepositoryName}:latest 022499006293.dkr.ecr.us-east-1.amazonaws.com/${RepositoryName}:latest
 
   post_build:
     commands:
       - echo Pushing the Docker image...
-      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - docker push 022499006293.dkr.ecr.us-east-1.amazonaws.com/${RepositoryName}:latest
       - echo Build and push complete.
 
 artifacts:
