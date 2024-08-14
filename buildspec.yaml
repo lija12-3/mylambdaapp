@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    REPOSITORY_NAME: my-custom-repo
+    REPOSITORY_NAME: my-docker-repo
     ECR_REGISTRY: 022499006293.dkr.ecr.us-east-1.amazonaws.com
 
 phases:
