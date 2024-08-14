@@ -1,3 +1,5 @@
+version: 0.2
+
 env:
   variables:
     REPOSITORY_NAME: my-docker-repo
@@ -21,9 +23,8 @@ phases:
   build:
     commands:
       - echo "Calculating source hash..."
-      - >
-        SRC_HASH=$(echo $CODEBUILD_SOURCE_VERSION | awk -v FS="(Source/|.zip)" '{print $2}');
-        echo "Source code hash: $SRC_HASH";
+      - SRC_HASH=$(echo $CODEBUILD_SOURCE_VERSION | awk -F'/' '{print $NF}' | awk -F'.zip' '{print $1}')
+      - echo "Source code hash: $SRC_HASH"
       - echo "Building Docker image..."
       - docker build -t ${REPOSITORY_NAME}:${SRC_HASH} .
       - echo "Docker image built."
@@ -33,7 +34,7 @@ phases:
       - echo "Tagging Docker image with SRC_HASH and latest..."
       - docker tag ${REPOSITORY_NAME}:${SRC_HASH} ${ECR_REGISTRY}/${REPOSITORY_NAME}:${SRC_HASH}
       - docker tag ${REPOSITORY_NAME}:${SRC_HASH} ${ECR_REGISTRY}/${REPOSITORY_NAME}:latest
-      - echo "Pushing Docker image with SRC_HASH and latest tags to ECR..."
+      - echo "Pushing Docker image to ECR..."
       - docker push ${ECR_REGISTRY}/${REPOSITORY_NAME}:${SRC_HASH}
       - docker push ${ECR_REGISTRY}/${REPOSITORY_NAME}:latest
       - echo "Docker images pushed successfully."
