@@ -3,6 +3,7 @@ version: 0.2
 env:
   secrets-manager:
     GITHUB_TOKEN: githubsecret
+
 phases:
   install:
     runtime-versions:
@@ -14,6 +15,7 @@ phases:
       - echo Installing project dependencies...
       - npm ci
       - npm dedupe
+
   pre_build:
     commands:
       - echo Starting unit tests at `date`
@@ -23,6 +25,7 @@ phases:
       - npm prune --production
       - echo Logging in to Amazon ECR...
       - aws --region ca-central-1 ecr get-login-password | docker login --username AWS --password-stdin 136666276919.dkr.ecr.ca-central-1.amazonaws.com
+
   build:
     commands:
       - echo Building for production...
@@ -48,9 +51,11 @@ phases:
       - cp -f production-params.json .aws/cloudformation/config/production-params.json
       - cp -rf .aws dist/
       - rm -rf node_modules/npm
+
   post_build:
     commands:
       - echo Build Complete
+
 artifacts:
   files:
     - '**/*'
