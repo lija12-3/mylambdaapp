@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN npm install
 
 # Copy the Lambda function code to the working directory
-COPY index.js ./
+COPY app.js ./
 
 # Set the CMD to your handler (filename.exportedFunctionName)
 CMD [ "index.handler" ]
