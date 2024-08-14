@@ -1,32 +1,37 @@
 version: 0.2
 
+env:
+  variables:
+    REPOSITORY_NAME: my-custom-repo
+    ECR_REGISTRY: 022499006293.dkr.ecr.us-east-1.amazonaws.com
+
 phases:
   install:
     runtime-versions:
       nodejs: 14
     commands:
       - echo Installing dependencies...
-      - npm install # This step will ensure any future dependencies are installed
+      - npm install
       - echo Dependencies installed.
       
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws --region us-east-1 ecr get-login-password | docker login --username AWS --password-stdin 022499006293.dkr.ecr.us-east-1.amazonaws.com
+      - aws --region us-east-1 ecr get-login-password | docker login --username AWS --password-stdin ${ECR_REGISTRY}
       - echo Logging in complete.
       
   build:
     commands:
       - echo Building Docker image...
-      - docker build -t ${RepositoryName} .
+      - docker build -t ${REPOSITORY_NAME} .
       - echo Docker image built.
 
   post_build:
     commands:
       - echo Tagging Docker image...
-      - docker tag ${RepositoryName}:latest 022499006293.dkr.ecr.us-east-1.amazonaws.com/${RepositoryName}:latest
+      - docker tag ${REPOSITORY_NAME}:latest ${ECR_REGISTRY}/${REPOSITORY_NAME}:latest
       - echo Pushing Docker image to ECR...
-      - docker push 022499006293.dkr.ecr.us-east-1.amazonaws.com/${RepositoryName}:latest
+      - docker push ${ECR_REGISTRY}/${REPOSITORY_NAME}:latest
       - echo Docker image pushed.
 
 artifacts:
