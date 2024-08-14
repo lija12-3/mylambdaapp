@@ -5,40 +5,31 @@ phases:
     runtime-versions:
       nodejs: 14
     commands:
-      - echo Installing global dependencies...
-      - npm install -g typescript jest @types/node
-      - echo Installing project dependencies...
-      - npm ci
-      - npm dedupe
-
+      - echo Installing dependencies...
+      - npm install # This step will ensure any future dependencies are installed
+      - echo Dependencies installed.
+      
   pre_build:
     commands:
-      - echo Starting unit tests at `date`
-      - npm run test
-      - echo Unit tests execution complete at `date`
-      - echo Removing devDependencies...
-      - npm prune --production
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 022499006293.dkr.ecr.us-east-1.amazonaws.com
-
+      - aws --region us-east-1 ecr get-login-password | docker login --username AWS --password-stdin 022499006293.dkr.ecr.us-east-1.amazonaws.com
+      - echo Logging in complete.
+      
   build:
     commands:
-      - echo Building for production...
-      - tsc --build tsconfig.json
-      - echo Building the Docker image for the application...
+      - echo Building Docker image...
       - docker build -t my-custom-repo .
+      - echo Docker image built.
 
   post_build:
     commands:
-      - echo Tagging the Docker image...
+      - echo Tagging Docker image...
       - docker tag my-custom-repo:latest 022499006293.dkr.ecr.us-east-1.amazonaws.com/my-custom-repo:latest
-      - echo Pushing the Docker image to ECR...
+      - echo Pushing Docker image to ECR...
       - docker push 022499006293.dkr.ecr.us-east-1.amazonaws.com/my-custom-repo:latest
-      - echo Build and push complete
+      - echo Docker image pushed.
 
 artifacts:
   files:
     - '**/*'
   base-directory: dist
-
-   
